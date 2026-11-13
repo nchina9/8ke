@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<title>多少钱? 타임머신 송나라 시장 탈출 3D</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%8F%B1%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&display=swap">
+<link rel="stylesheet" href="style.css?v=69">
+</head>
+<body>
+<header>
+  <div class="title">⏱ 多少钱? 타임머신 송나라 시장 탈출</div>
+  <div id="place">汴京 성문 앞</div>
+  <span id="ver" class="ver" title="눌러서 상태 확인"></span>
+  <div id="mini"></div>
+  <div class="spacer"></div>
+  <button id="reviewBtn" title="푼 문제 다시 보기">📖 복습</button>
+  <button id="padBtn" title="조작 버튼 모양 바꾸기">🎮 원형</button>
+  <button id="resetBtn">처음부터</button>
+  <span class="copy"><span class="lg">Copyright by sciencelove.com</span><span class="sm">ⓒ sciencelove.com</span></span>
+  <button id="fsBtn" title="전체화면">⛶ 전체화면</button>
+</header>
+
+<main id="stage">
+  <!-- 게임 화면 (3D · 남는 공간을 꽉 채웁니다) -->
+  <div id="fit">
+    <div id="frame">
+      <div class="clouds"><i></i><i></i><i></i><i></i></div>
+      <canvas id="game"></canvas>
+      <div id="labels"></div>
+      <!-- 🧟 좀비에게 물렸을 때 붉게 번쩍 -->
+      <div id="hurt"></div>
+      <!-- ❤ 라이프 · 💉 주사기 (오른쪽 위) -->
+      <div id="vital" style="display:none"><span class="hearts" id="hearts"></span><span class="ammo" title="주사기 공격 횟수">💉<b id="ammo">5</b></span></div>
+      <!-- 오답 마법 연출 -->
+      <div id="warp" style="display:none"><div class="rings"><i></i><i></i><i></i><i></i><i></i></div>
+        <div class="wt"><b>✨ 마법에 걸렸습니다</b><small>성문 앞으로 돌아갑니다</small></div></div>
+      <!-- 안내문 (데이터 오류 · 3D 를 켤 수 없음 · 상태 확인) -->
+      <div id="sysmsg"></div>
+    </div>
+    <div id="hud">
+      <div class="panel">
+        <div class="person">
+          <div class="dot"></div><div><b>여행자</b><small>시간 여행자</small></div>
+        </div>
+        <div class="line">푼 문제 <strong id="progress">0 / 0</strong></div>
+        <div class="line">비밀번호 <strong id="pass">?</strong></div>
+        <div class="line">현재 위치 <strong id="where">汴京 성문 앞</strong></div>
+      </div>
+      <div class="panel mission"><b>현재 미션</b><div id="mission">송나라 시장 거리를 다니며 문제를 찾아보세요.</div></div>
+    </div>
+    <div id="notice"></div>
+    <div id="rotate"><div class="ic">📱↻</div><div class="tx">가로로 돌리면<br>화면이 더 커집니다</div></div>
+  </div>
+
+  <!-- 조작 버튼 -->
+  <div id="controls">
+    <div id="ctrlMsg"></div>
+    <div id="ctrlStat"></div>
+    <div id="pads">
+      <div id="dpadRound" class="dpad round">
+        <span class="w up">▲</span>
+        <span class="w down">▼</span>
+        <span class="w left">◀</span>
+        <span class="w right">▶</span>
+        <span class="hub" id="joyKnob"></span>
+      </div>
+      <div id="dpadCross" class="dpad cross">
+        <button data-key="ArrowUp">▲</button>
+        <div>
+          <button data-key="ArrowLeft">◀</button>
+          <button data-key="ArrowDown">▼</button>
+          <button data-key="ArrowRight">▶</button>
+        </div>
+      </div>
+      <button id="e">E</button>
+    </div>
+  </div>
+
+  <!-- 문제 창 -->
+  <div id="quiz" class="modal">
+    <div class="box">
+      <div class="head">
+        <b id="quizTitle">문제</b>
+        <span class="num" id="quizNum">1 / 1</span>
+        <button id="quizClose">×</button>
+      </div>
+      <div class="teamnote" id="quizTeam"></div>
+      <div class="q" id="quizQ"></div>
+      <div class="qimgbox" id="quizImg"></div>
+      <div class="opts" id="quizOpts"></div>
+      <div class="feed" id="quizFeed"></div>
+      <button id="quizOk" class="okbtn">확인</button>
+    </div>
+  </div>
+
+  <!-- 비밀번호 창 -->
+  <div id="pad" class="modal">
+    <div class="box padbox">
+      <div class="head"><b>⏱ 타임머신 잠금 장치</b><button id="padClose">×</button></div>
+      <div class="padhint" id="padHint"></div>
+      <input id="padText" class="padinput" type="text" autocomplete="off" autocorrect="off"
+             autocapitalize="off" spellcheck="false" placeholder="정답을 입력하세요">
+      <button id="padGo" class="okbtn wide">확인</button>
+      <div class="feed" id="padMsg"></div>
+    </div>
+  </div>
+
+  <!-- 마지막 평가(시험) 창 -->
+  <div id="exam" class="modal">
+    <div class="box reviewbox">
+      <div class="head"><b>📝 마지막 평가</b><span class="num" id="examNum"></span>
+        <button id="examClose">×</button></div>
+      <div class="rsum" id="examHint"></div>
+      <div class="rlist" id="examList"></div>
+      <div class="feed" id="examMsg"></div>
+      <button id="examGo" class="okbtn wide">채점하기</button>
+    </div>
+  </div>
+
+  <!-- 복습 창 -->
+  <div id="review" class="modal">
+    <div class="box reviewbox">
+      <div class="head"><b>📖 오늘 푼 문제 다시 보기</b><button id="reviewClose">×</button></div>
+      <div class="rsum" id="reviewSum"></div>
+      <div class="rlist" id="reviewList"></div>
+      <button id="reviewOk" class="okbtn">닫기</button>
+    </div>
+  </div>
+
+  <!-- 결과 창 -->
+  <div id="dialog" class="modal">
+    <div class="box">
+      <div class="head"><b id="dialogTitle">알림</b><button id="closeDialog">×</button></div>
+      <div id="dialogText"></div>
+      <button id="dialogReview" class="okbtn alt">📖 푼 문제 다시 보기</button>
+      <button id="dialogNo" class="okbtn gray">취소</button>
+      <button id="dialogOk" class="okbtn">확인</button>
+    </div>
+  </div>
+  <!-- 정답 / 오답 표시 (불꽃놀이는 표창장과 같은 코드를 씁니다) -->
+  <div id="mark">
+    <canvas id="markFx"></canvas>
+    <div class="mk" id="markTxt">O</div>
+  </div>
+
+  <!-- 탈출 성공 화면 (한 번 뜨면 게임으로 돌아가지 않습니다) -->
+  <div id="win">
+    <canvas id="fire"></canvas>
+    <div class="cert">
+      <div class="certin">
+        <div class="ctitle">표 창 장</div>
+        <div class="cline"></div>
+        <div class="cname" id="winName">여행자</div>
+        <div class="cbody" id="winBody">
+          축하합니다! 타임머신을 고쳐 현재로 돌아왔습니다.<br>
+          Duōshao qián? 송나라 시장 흥정 대성공~ ⏱🏮<br>
+          남은 시간 문제 복습하기 버튼을 눌러 8과 내용을 복습해 보세요
+        </div>
+        <div class="cfoot">
+          <span class="cdate" id="winDate"></span>
+          <span class="cseal">🏅</span>
+        </div>
+      </div>
+    </div>
+    <div class="cbtns">
+      <button id="winReview" class="okbtn">📖 문제 복습하기</button>
+      <button id="winRestart" class="okbtn gray">🔄 처음부터 다시하기</button>
+    </div>
+  </div>
+</main>
+
+<script src="start.js?v=69"></script>
+<script src="data/maps.js?v=69"></script>
+<script src="data/quiz.js?v=69"></script>
+<!-- 3D 그리기 : three.js(r149) 와 송나라 시장 거리를 3D 로 짓는 모듈 -->
+<script src="lib/three.min.js?v=149"></script>
+<script src="world3d.js?v=69"></script>
+<!-- 구글 시트에서 문제를 받아온 뒤 game.js 를 실행합니다 -->
+<script src="worldmap.js?v=69"></script>
+<!-- 가까이 가면 반응하는 물건 (재미용) -->
+<script src="fxkit.js?v=69"></script>
+<script src="react.js?v=69"></script>
+<script src="data/sheet.js?v=69"></script>
+</body>
+</html>
